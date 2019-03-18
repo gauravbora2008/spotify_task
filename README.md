@@ -1,3 +1,3 @@
 # Spotify Playlist Mood Visualizer
 
-Submitted for a task assigned.
+Submitted in response to a task given as part of intern application
