@@ -1,0 +1,138 @@
+
+
+/* Colors */
+/* https://coolors.co/f71909-e55812-faf0ca-f4d35e-0b6e4f */
+
+/* Grays */
+/* https://coolors.co/020202-1c1c1c-969696-bfbfbf-f7f7f7 */
+
+/* linear-gradient(to top, ${valenceColor}, ${energyColor});
+*/
+
+html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    min-width: 100%;
+    background: #fafafa;
+    font-family: 'Alef', sans-serif;
+    color: #343434;
+    margin: 0;
+    padding: 0;
+    transition: background-image ease 0.25s;
+}
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+.main-heading {
+    font-size: 25px;
+    text-transform: uppercase;
+    margin-bottom: 5px;    
+}
+.main-heading-sub {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+#login, #loggedin {
+    display: block;
+    position: relative;
+}
+
+.track {
+    font-size: 21px;
+    background: hsl(197, 24%, 94%);
+    color: hsl(0, 0%, 20%);
+    padding: 8px 10px;
+    list-style: none;
+    border-radius: 5px;
+    line-height: 1;
+    border-left: 10px solid #fff;
+    border-top: 10px solid #fff;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.6);
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    width: calc(33.3333% - 10px);
+}
+.albumArt {
+    max-width: 67px;
+}
+.track-details {
+    list-style: none;
+    font-size: 11px;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0 0 0 10px;
+}
+.playlist-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+#login {
+    max-width: 500px;
+}
+#token-refresh-alert {
+    position: absolute;
+    font-size: 20px;
+    box-shadow: 2px 3px 2px rgba(0,0,0,0.2);
+    right: 0;
+    top: 10px;
+    opacity: 0;
+    transition: opacity ease 0.5s 0.3s;
+    /* display: none; */
+}
+
+#token-refresh-alert .close {
+    font-size: 32px;
+    line-height: 0.8;
+    margin-left: 7px;
+}
+.playlist-title {
+    width: 100%;
+    font-size: 40px;
+    margin: 0;
+    line-height: 1;
+}
+
+.playlist-desc {
+    font-size: 18px;
+    margin: 0;
+    line-height: 1;
+}
+
+.playlist-info {
+    width: 100%;
+    background: hsl(197, 24%, 94%);
+    margin-bottom: 20px;
+    border-radius: 5px;
+    padding: 10px 15px 20px;
+    
+}
+
+.main-info {
+    background: hsl(197, 24%, 94%);
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.test-playlists {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 40px auto;
+}

@@ -1,0 +1,318 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Example of the Authorization Code flow with Spotify</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css?family=Alef" rel="stylesheet">
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  </head>
+
+  <body>
+      
+    <div class="container">
+      <div id="login">
+          <h2 class="main-heading text-left">Spotify Playlist Mood Visualizer</h2>
+          <a href="/login">Login</a>
+      </div>
+      <div id="loggedin">
+          <div class="form-container">
+
+              
+                <!-- <div class="form-group">
+                  <label for="userID">User ID</label>
+                  <input type="text" class="form-control" id="userID" name="userID" placeholder="Enter User ID" required>
+                </div> -->
+                <div class="form-group">
+                    <label for="playlistID">Playlist ID</label>
+                    <input type="text" class="form-control" id="playlistID" name="playlistID" placeholder="Enter Playlist ID" required>
+                </div>
+                
+                <a href="javascript:void(0)" ID="view-playlist" class="btn btn-primary">View Playlist</a>
+              
+              <ul class="test-playlists">
+                <li>'37i9dQZF1DX7gIoKXt0gmx' - Reference playlist</li>
+                <li>'37i9dQZF1DXdPec7aLTmlC' - Happy Hits!</li>
+                <li>'37i9dQZF1DWWjGdmeTyeJ6' - Fresh Finds</li>
+                <li>'05mbSA2U0bQ1DqF84eQBBH' - Death Metal Mix 2019</li>
+                <li>'37i9dQZF1DX2sUQwD7tbmL' - Feel-Good Indie Rock</li>
+              </ul>
+            </div>
+        <div id="token-refresh-alert" class="alert alert-warning alert-dismissible" role="alert">
+            Token refreshed!
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          
+        <div id="playlist-data">
+        </div>
+      </div>
+    </div>
+    
+    <script id="playlist-data-template" type="text/x-handlebars-template">
+    <div class="main-info">
+      <h2 class="main-heading text-left">Spotify Playlist Mood Visualizer</h2>
+      <h4 class="main-heading-sub text-left">Submitted by - Gaurav Bora</h4>
+    </div>
+      <div class="playlist-wrapper"> 
+        <div class="playlist-info">
+          <h3 class="playlist-title">{{name}}</h3>      
+          <p class="playlist-desc">{{desc}}</p>      
+        </div>
+        {{#each tracks.items}}
+        <div class="track track-container">  
+          <div class="albumArt">          
+            <img src="{{this.track.album.images.0.url}}" class="img-fluid rounded">
+          </div>
+          <ul class="track-details track-{{@index}}">
+            <!-- <li><b>Album: </b>{{this.track.album.name}}</li>    -->
+            <li><b>Track - </b>{{this.track.name}}</li> 
+            <li><b>Artist(s) - </b>          
+              {{#each this.track.artists}}            
+              <span class="artist">{{this.name}}{{#unless @last}},{{/unless}}</span>
+              {{/each}}
+            </li>   
+            <!-- <li><b>Track id: </b>{{this.track.id}}</li> -->
+            <li class="track-energy"><b>Energy - </b>{{this.track.energy}}</li>
+            <li><b>Valence - </b>{{this.track.valence}}</li>             
+          </ul>
+        </div>
+        {{/each}}
+      </div>
+    </script>
+
+    
+    <script>
+      (function() {
+        function getHashParams() {
+          var hashParams = {};
+          var e, r = /([^&;=]+)=?([^&;]*)/g,
+              q = window.location.hash.substring(1);
+          while ( e = r.exec(q)) {
+             hashParams[e[1]] = decodeURIComponent(e[2]);
+          }
+          return hashParams;
+        }
+
+        var playlistDataSource = document.getElementById('playlist-data-template').innerHTML,
+            playlistDataTemplate = Handlebars.compile(playlistDataSource),
+            playlistDataPlaceholder = document.getElementById('playlist-data');
+
+        var params = getHashParams();
+
+        var access_token = params.access_token,
+            refresh_token = params.refresh_token,
+            error = params.error;
+
+        // var track_id = '11dFghVXANMlKmJXsNCbNl';
+
+        // test playlists used
+        var playlist_id = '37i9dQZF1DX7gIoKXt0gmx'; // Reference playlist
+        // var playlist_id = '37i9dQZF1DXdPec7aLTmlC'; // Happy Hits!
+        // var playlist_id = '37i9dQZF1DWWjGdmeTyeJ6'; // Fresh Finds
+        //  var playlist_id = '05mbSA2U0bQ1DqF84eQBBH'; // Death Metal Mix 2019
+        // var playlist_id = '37i9dQZF1DX2sUQwD7tbmL'; // Feel-Good Indie Rock
+
+        function init(playlist_id) {
+          $.ajax({
+                // 
+                // url: 'https://api.spotify.com/v1/tracks/'+ track_id + '?market=ES',
+                // url: 'https://api.spotify.com/v1/playlists/3cEYpjA9oz9GiPac4AsH4n/tracks',
+
+                url: 'https://api.spotify.com/v1/playlists/' + playlist_id,
+                headers: {
+                  'Authorization': 'Bearer ' + access_token
+                },
+                success: function(response) {
+                  //userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+                  console.log(response);
+                  showData(response.name, response.description, response.tracks);
+                  document.getElementById('login').style.display = 'none';
+                  $('#loggedin').show();
+                }, error: function(response) {
+                  // if token has expired
+                  if(response.responseJSON.error.status == 401) {
+
+                    // get new token and initialize again
+                    getNewToken();                    
+
+                  } else {
+                    // some other error probably if not 401
+                    console.log(response.responseJSON.error);
+                    document.getElementById('login').style.display = 'none';
+                  }
+                }
+          });
+        }
+        
+        if (error) {
+          alert('There was an error during the authentication');
+        } else {
+          if (access_token) {
+            // if access token is received then init visualization
+            init();
+          } else {
+              // render initial screen
+              $('#login').show();
+              $('#loggedin').hide();
+          }
+          
+          var colorPalette = {
+            'valence' : ['#f71909', '#e55812', '#faf0ca', '#f4d35e', '#0b6e4f'],
+            'energy' : ['#020202', '#1c1c1c', '#969696', '#bfbfbf', '#f7f7f7']
+          }
+
+          function setColor(data) {
+            const trackListElems = document.getElementsByClassName("track");
+
+            var energySum = 0;
+            var valenceSum = 0;
+            var energyArray = [];
+            var valenceArray = [];
+
+            for(m = 0; m < trackListElems.length; m++) {
+              // console.log(data);
+              var trackEnergyValue = data.items[m].track.energy;
+              var trackValenceValue = data.items[m].track.valence;
+              
+              var valenceValueIndex = Math.round(trackValenceValue * 5) - 1;
+              var energyValueIndex = 5 - (Math.round(trackEnergyValue * 5) - 1);
+              
+              if(energyValueIndex < 0) energyValueIndex = 0;
+              if(energyValueIndex > 4) energyValueIndex = 4;
+              if(valenceValueIndex < 0) valenceValueIndex = 0;
+              if(valenceValueIndex > 4) valenceValueIndex = 4;
+
+              // console.log(valenceValueIndex);
+              // console.log(energyValueIndex);
+
+              // get colors
+              valenceValueColor = colorPalette.valence[valenceValueIndex];
+              energyValueColor = colorPalette.energy[energyValueIndex];
+              
+              trackListElems[m].style.borderLeft = `10px solid ${valenceValueColor}`;
+              trackListElems[m].style.borderTop = `10px solid ${energyValueColor}`;
+              
+              // aggregating values for calculating mood colors
+              energySum +=  trackEnergyValue;
+              energyArray.push(trackEnergyValue);
+              valenceSum +=  trackValenceValue;
+              valenceArray.push(trackValenceValue);
+
+            }
+            
+            // // console.log(trackListElems);
+            
+            var valenceMean =  valenceSum / valenceArray.length;
+            var energyMean = energySum / energyArray.length;
+            
+            // // console.log(valenceMean); // 3 ===>
+            
+            var valenceMeanIndex = Math.round(valenceMean * 5) - 1;
+            var energyMeanIndex = 5 - (Math.round(energyMean * 5) - 1);
+            
+            // console.log(valenceMeanIndex); // 3 ===>
+            // console.log(energyMeanIndex); // 3 ===>
+            
+            // get colors
+            valenceMeanColor = colorPalette.valence[valenceMeanIndex];
+            energyMeanColor = colorPalette.energy[energyMeanIndex];
+            
+            // var colorString = `linear-gradient(to top, ${valenceMeanColor}, ${energyMeanColor})`;
+            var colorString = `radial-gradient(${energyMeanColor}, ${valenceMeanColor})`;
+            
+            // console.log(colorString);
+            // console.log(trackListElems.length);
+            
+            document.getElementsByTagName("body")[0].style.backgroundImage = colorString;
+            
+            // console.log(energyMeanColor);
+            
+            
+          }
+
+          function showData(name, desc, data) {
+            
+            var ids_for_url = data.items[0].track.id;
+            // concatenate all tracks of playlist
+            
+            for(i=1; i < data.items.length; i++) {
+              ids_for_url += '%2C' + data.items[i].track.id;
+            }
+
+            $.ajax({
+              url: 'https://api.spotify.com/v1/audio-features?ids=' + ids_for_url,
+              headers: {
+                  'Authorization': 'Bearer ' + access_token
+                },
+                success: function(response2) {
+                  
+                  // console.log(response2);
+                  // console.log("data is \n==================");                  
+                  // console.log(data);
+
+                  for(j=0; j < data.items.length; j++) {
+                    // console.log(data.items[j].track);
+                    data.items[j].track.energy = response2.audio_features[j].energy;
+                    data.items[j].track.valence = response2.audio_features[j].valence;
+                  }
+                  
+                  // render playlistData info
+                  playlistDataPlaceholder.innerHTML = playlistDataTemplate({
+                    tracks: data,
+                    name: name,
+                    desc: desc
+                  });
+                  
+                  setColor(data);
+
+                }
+            });
+
+          }
+
+          function getNewToken() {
+            $.ajax({
+              url: '/refresh_token',
+              data: {
+                'refresh_token': refresh_token
+              }
+            }).done(function(data) {
+              access_token = data.access_token;
+              console.log("token refreshed!")
+              var refreshTokenAlertEl = document.getElementById("token-refresh-alert");
+              console.log(refreshTokenAlertEl.className);
+              setTimeout(() => {
+                refreshTokenAlertEl.className += ' show';
+                refreshTokenAlertEl.style.opacity = "1";
+              }, 1550);
+              setTimeout(() => {
+                refreshTokenAlertEl.style.opacity = "0";
+                refreshTokenAlertEl.className = 'alert alert-warning alert-dismissible';
+              }, 4550);
+              // console.log(access_token);
+              // console.log(refresh_token);
+              init();
+            });
+          }
+
+          function initPlaylist() {
+            playlist_id = document.getElementById('playlistID').value;
+            init(playlist_id);
+          }
+
+          document.getElementById('view-playlist').addEventListener('click', initPlaylist, false);
+        }
+      })();
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+  </body>
+</html>
+
