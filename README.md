@@ -1,1 +1,3 @@
-# spotify_task
+# Spotify Playlist Mood Visualizer
+
+Submitted for a task assigned.
